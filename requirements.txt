@@ -1,0 +1,6 @@
+# python>=3.8
+h5py
+numpy
+pillow
+nicegui>1.3.16
+matplotlib

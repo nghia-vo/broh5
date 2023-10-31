@@ -24,7 +24,7 @@ Features
   datasets as values, images, plots, or tables. Users also can save datasets 
   to images or csv formats.
 
-  ![Fig_01](./figs/fig_01.png)
+  ![Fig_01](https://github.com/nghia-vo/broh5/raw/main/figs/fig_01.png)
 
 - The codebase is designed using the RUI (Rendering-Utilities-Interactions) 
   concept, which is known as the MVC (Model-View-Controller) pattern in the 
@@ -131,7 +131,7 @@ Brief functionalities of broh5:
 
 Video demonstration:
 
-  [![Demo](https://img.youtube.com/vi/lEJ6LKOaIFk/sddefault.jpg)](https://www.youtube.com/watch?v=lEJ6LKOaIFk)
+[![Demo](https://img.youtube.com/vi/lEJ6LKOaIFk/sddefault.jpg)](https://www.youtube.com/watch?v=lEJ6LKOaIFk)
  
 Author
 ------

@@ -95,10 +95,10 @@ Installation
     ```commandline
     pip install pyinstaller
     ```
-    Generate the executable file by running **build.py** at the cloned directory   
+    Generate the executable file by running **generate_exe.py** at the cloned directory   
 
     ```commandline
-    python build.py
+    python generate_exe.py
     ```
     Navigate to the **dist** directory and run
       ```commandline

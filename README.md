@@ -42,11 +42,7 @@ Installation
   ```commandline
   pip install broh5
   ```
-  If using `conda`:
-  
-  ```commandline
-  conda install -c algotom broh5  
-  ```
+
   Once installed, launching Broh5 with:
 
   ```commandline

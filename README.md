@@ -84,6 +84,12 @@ Installation
     ```commandline
     pip install .
     ```
+    
+    Troubleshooting:
+  
+    * If you encounter an error related to *fastapi* and *anyio*, add the line "anyio<4.0.0" to the dependencies in *setup.py*.
+    * If you encounter an error related to *matplotlib* and either *PyQt5* or *PySide2*, install PySide2 using the command: `pip install PySide2`.
+
   + If you would like to creating a standalone executable for broh5:
     
     Install PyInstaller

@@ -248,13 +248,28 @@ class FilePicker(ui.dialog):
         if self.path.is_dir():
             self.update_grid()
         else:
-            self.submit(str(self.path))
+            if self.path:
+                self.submit(str(self.path))
+            else:
+                return
 
     async def handle_ok(self):
-        rows = await ui.run_javascript(
-            f'getElement({self.grid.id}).gridOptions.api.getSelectedRows()')
-        fpath = [r['path'] for r in rows]
-        self.submit(fpath[0])
+        try:
+            rows = await ui.run_javascript(
+                f'getElement({self.grid.id}).gridOptions.api.getSelectedRows()')
+            if rows:
+                fpath = [r['path'] for r in rows]
+                if fpath:
+                    self.submit(fpath[0])
+                else:
+                    ui.notify("No file path found in the selected rows")
+                    return
+            else:
+                ui.notify("No rows selected.")
+                return
+        except Exception as e:
+            ui.notify(f"An error occurred: {e}")
+            return
 
 
 class FileSaver(ui.dialog):

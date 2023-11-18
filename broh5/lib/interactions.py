@@ -72,7 +72,10 @@ class GuiInteraction(GuiRendering):
                             on_select=lambda e: self.show_key(e, file_path))
                     ui.button("Close file", on_click=lambda: close_file())
             else:
-                ui.notify("Input must be hdf, nxs, or h5 format!")
+                if isinstance(hdf_dic, str):
+                    ui.notify(hdf_dic)
+                else:
+                    ui.notify("Input must be hdf, hdf5, nxs, or h5 format!")
 
     def disable_sliders(self):
         """Disable and reset values of sliders"""
@@ -300,8 +303,21 @@ class GuiInteraction(GuiRendering):
                             self.main_plot.update()
                         self.reset(keep_display=True)
                 except Exception as error:
-                    self.reset()
-                    ui.notify("Error {}".format(error))
+                    self.reset(keep_display=True)
+                    _, broken_link, msg = util.check_external_link(file_path1,
+                                                                   hdf_key1)
+                    if broken_link:
+                        ui.notify(msg)
+                    else:
+                        _, ext_compressed, msg = util.check_compressed_dataset(
+                            file_path1, hdf_key1)
+                        if ext_compressed:
+                            ui.notify(msg)
+                        else:
+                            ui.notify("Error: {}".format(error))
+                            ui.notify("Dataset may be an external link and the"
+                                      " target file is not accessible (moved, "
+                                      "deleted, or corrupted) !!!")
         else:
             self.hdf_value_display.set_text("")
             with self.main_plot:

@@ -1,4 +1,5 @@
 # python>=3.8
+numpy
 h5py
 pillow
 nicegui>1.3.16

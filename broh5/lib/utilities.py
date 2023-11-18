@@ -30,9 +30,14 @@ def __recurse(parent_path, name, obj):
     if isinstance(obj, h5py._hl.dataset.Dataset):
         return [{"id": name, "label": current_path}]
     elif isinstance(obj, h5py._hl.group.Group):
-        children = [__recurse(current_path, key, obj[key])
-                    for key in obj.keys()]
-        children = [item for sublist in children for item in sublist]
+        children = []
+        for key in obj.keys():
+            try:
+                child_obj = obj[key]
+                child_items = __recurse(current_path, key, child_obj)
+                children.extend(child_items)
+            except Exception:
+                children.append({"id": key, "label": f"{current_path}/{key}"})
         return [{"id": name, "label": current_path, "children": children}]
 
 
@@ -47,52 +52,114 @@ def hdf_tree_to_dict(hdf_file):
         hdf_obj1.close()
         return result
     except Exception as error:
-        return error
+        return str(error)
 
 
 def get_hdf_data(file_path, dataset_path):
     """ Get data type and value from a hdf dataset """
-    with h5py.File(file_path, 'r') as f:
-        if dataset_path not in f:
+    with h5py.File(file_path, 'r') as file:
+        if dataset_path not in file:
             return "not path", None
-        item = f[dataset_path]
-        if isinstance(item, h5py.Group):
-            return "group", None
-        data_type, value = "unknown", None
-        # Check the type and shape of a dataset
-        if item.dtype.kind == 'S':  # Fixed-length bytes
-            data = item[()]
-            if item.size == 1:  # Single string or byte
-                if isinstance(data, bytes):
-                    data_type, value = "string", data.decode('utf-8')
-                elif isinstance(data.flat[0], bytes):
-                    data_type, value = "string", data.flat[0].decode('utf-8')
-            else:
-                data_type, value = "array", [d.decode('utf-8') for d in data]
-        elif item.dtype.kind == 'U':  # Fixed-length Unicode
-            data = item[()]
-            if item.size == 1:  # Single string
-                data_type, value = "string", data
-            else:
-                data_type, value = "array", list(data)
-        elif h5py.check_dtype(vlen=item.dtype) in [str, bytes]:
-            data = item[()]
-            if isinstance(data, (str, bytes)):
-                data_type, value = "string", data if isinstance(data, str) \
-                    else data.decode('utf-8')
-            else:
-                joined_data = ''.join(
-                    [d if isinstance(d, str) else d.decode('utf-8') for d in
-                     data])
-                data_type, value = "string", joined_data
-        elif item.dtype.kind in ['i', 'f', 'u']:
-            if item.shape == () or item.size == 1:
-                data_type, value = "number", item[()]
-            else:
-                data_type, value = "array", item.shape
-        elif item.dtype.kind == 'b':  # Boolean type
-            data_type, value = "boolean", int(item[()])
-        return data_type, value
+        try:
+            item = file[dataset_path]
+            if isinstance(item, h5py.Group):
+                return "group", None
+            data_type, value = "unknown", None
+            # Check the type and shape of a dataset
+            if item.dtype.kind == 'S':  # Fixed-length bytes
+                data = item[()]
+                if item.size == 1:  # Single string or byte
+                    if isinstance(data, bytes):
+                        data_type, value = "string", data.decode('utf-8')
+                    elif isinstance(data.flat[0], bytes):
+                        data_type, value = "string", data.flat[0].decode(
+                            'utf-8')
+                else:
+                    data_type, value = "array", [d.decode('utf-8') for d in
+                                                 data]
+            elif item.dtype.kind == 'U':  # Fixed-length Unicode
+                data = item[()]
+                if item.size == 1:  # Single string
+                    data_type, value = "string", data
+                else:
+                    data_type, value = "array", list(data)
+            elif h5py.check_dtype(vlen=item.dtype) in [str, bytes]:
+                data = item[()]
+                if isinstance(data, (str, bytes)):
+                    data_type, value = "string", data if isinstance(data, str)\
+                        else data.decode('utf-8')
+                else:
+                    joined_data = ''.join(
+                        [d if isinstance(d, str) else d.decode('utf-8')
+                         for d in data])
+                    data_type, value = "string", joined_data
+            elif item.dtype.kind in ['i', 'f', 'u']:
+                if item.shape == () or item.size == 1:
+                    data_type, value = "number", item[()]
+                else:
+                    data_type, value = "array", item.shape
+            elif item.dtype.kind == 'b':  # Boolean type
+                data_type, value = "boolean", int(item[()])
+            return data_type, value
+        except Exception as error:
+            return str(error), None
+
+
+def check_external_link(file_path, dataset_path):
+    """
+    Checks if the dataset at the specified path is an external link
+    and if it's broken.
+    """
+    ext_link = False
+    broken = False
+    msg = ""
+    with h5py.File(file_path, 'r') as file:
+        if dataset_path in file:
+            # Check for external link
+            link = file.get(dataset_path, getlink=True)
+            if isinstance(link, h5py.ExternalLink):
+                ext_link = True
+                try:
+                    file[dataset_path]
+                    msg = "Dataset is an external link"
+                except Exception as error:
+                    msg = "Dataset is an external link but failed " \
+                          "to link. Error: " + str(error)
+                    broken = True
+        else:
+            msg = "Dataset path not found in the file."
+    return ext_link, broken, msg
+
+
+def check_compressed_dataset(file_path, dataset_path):
+    """
+    Checks if the specified dataset is compressed including checking for
+    external compression filters.
+    """
+    compressed = False
+    ext_compressed = False
+    msg = ""
+    with h5py.File(file_path, 'r') as file:
+        if dataset_path in file:
+            dataset = file[dataset_path]
+            compression = dataset.compression
+            # Check for standard compression
+            if compression:
+                compressed = True
+                msg = "Dataset is compressed using standard method: " \
+                      "{}".format(compression)
+            # Check for external filters
+            plist = dataset.id.get_create_plist()
+            n_filters = plist.get_nfilters()
+            for i in range(n_filters):
+                filter_info = plist.get_filter(i)
+                if filter_info:
+                    msg = "Dataset is compressed using external plugin:" \
+                          " {}".format(filter_info[-1])
+                    ext_compressed = True
+        else:
+            msg = "Dataset path not found in the file."
+    return compressed, ext_compressed, msg
 
 
 def format_table_from_array(data):

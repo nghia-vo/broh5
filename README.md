@@ -45,7 +45,6 @@ Installation
   If using `conda`:
 
   ```commandline
-  conda install -c conda-forge nicegui
   conda install -c algotom broh5  
   ```
 

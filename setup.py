@@ -6,8 +6,8 @@ py_ver = sys.version.split(".")[:2]
 python_version = py_ver[0] + "." + py_ver[1]
 
 dependencies = [
-    "numpy",
-    "h5py",
+    "numpy>1.22",
+    "h5py>3.7",
     "pillow",
     "matplotlib",
     "nicegui>1.3.16"

@@ -1,6 +1,6 @@
 # python>=3.8
-numpy
-h5py
+numpy>1.21
+h5py>3.7
 pillow
-nicegui>1.3.16
 matplotlib
+nicegui>1.3.16

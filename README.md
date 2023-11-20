@@ -45,6 +45,7 @@ Installation
   If using `conda`:
 
   ```commandline
+  conda config --add channels conda-forge
   conda install -c algotom broh5  
   ```
 

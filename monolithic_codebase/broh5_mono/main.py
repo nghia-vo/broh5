@@ -1,4 +1,5 @@
 import os
+import argparse
 import h5py
 import numpy as np
 from matplotlib import pyplot as plt
@@ -6,6 +7,7 @@ from nicegui import ui
 from nicegui.events import ValueChangeEventArguments
 from broh5_mono.util.components import FilePicker, FileSaver
 import broh5_mono.util.tools as tl
+from broh5_mono import __version__
 
 # ============================================================================
 #                   Global parameters for the GUI
@@ -27,8 +29,32 @@ HEADER_TITLE = "BROWSER-BASED HDF VIEWER"
 LEFT_DRAWER_COLOR = "#d7e3f4"
 TREE_BGR_COLOR = "#f8f8ff"
 
+display_msg = """
+===============================================================================
+
+Web-browser-based GUI (Graphical User Interface) software for viewing HDF files
+
+===============================================================================
+
+Type: broh5_mono to run the software
+Exit the software by pressing: Ctrl + C
+
+===============================================================================
+"""
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description=display_msg,
+                                     formatter_class=
+                                     argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--version', action='version',
+                        version=f'%(prog)s {__version__}')
+    parser.parse_args()
+
 
 def main():
+    parse_args()
+
     # ========================================================================
     #                  Methods to be called by UI interactions
     # ========================================================================

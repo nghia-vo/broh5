@@ -271,7 +271,7 @@ def main():
                             main_plot.update()
                         reset(keep_display=True)
                 except Exception as error:
-                    reset()
+                    reset(keep_display=True)
                     ui.notify("Error {}".format(error))
         else:
             hdf_value_display.set_text("")

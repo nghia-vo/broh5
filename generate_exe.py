@@ -1,3 +1,6 @@
+"""
+To create a standalone executable for broh5
+"""
 import os
 import subprocess
 from pathlib import Path

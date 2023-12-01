@@ -13,6 +13,7 @@ import os
 import csv
 import tkinter as tk
 import h5py
+import hdf5plugin
 import numpy as np
 from PIL import Image
 
@@ -191,6 +192,9 @@ def save_image(file_path, mat):
     if not ((file_ext == ".tif") or (file_ext == ".tiff")):
         mat = np.uint8(
             255.0 * (mat - np.min(mat)) / (np.max(mat) - np.min(mat)))
+    else:
+        if mat.dtype != np.float32:
+            mat = mat.astype(np.float32)
     image = Image.fromarray(mat)
     try:
         image.save(file_path)
@@ -200,13 +204,22 @@ def save_image(file_path, mat):
 
 def save_table(file_path, data):
     """
-    Save 1D/2D array to a csv file.
+    Save 1D/2D numpy array to a CSV file.
     """
     try:
+        data = np.asarray(data)
         with open(file_path, 'w', newline='') as file:
-            if len(data.shape) == 1:
-                data = np.expand_dims(np.asarray(data), 1)
             writer = csv.writer(file)
-            writer.writerows(data)
+            if data.ndim == 1:
+                for item in data:
+                    writer.writerow([item])
+            elif data.ndim == 2:
+                if data.shape[0] * data.shape[1] < 4000000:
+                    writer.writerows(data)
+                else:
+                    return "Array has more than 4,000,000 elements. " \
+                           "Operation not performed."
+            else:
+                return "Data must be a 1D or 2D array"
     except Exception as error:
         return error

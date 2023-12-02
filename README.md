@@ -14,6 +14,8 @@ languages like C, Java, Qt/PyQt, or Html/JavasSript; this is a pioneering
 project where the HDF viewer is web browser-based but written entirely 
 in Python.
 
+Broh5 has been moved and maintained here: https://github.com/algotom/broh5
+
 Features
 --------
 
